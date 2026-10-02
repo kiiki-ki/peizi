@@ -311,6 +311,7 @@ const NEXT_PROMPT = {
   bday: "你的生日是几月几号呀？想问哪天给你惊喜～（不想说就发“略”）",
 };
 async function handleUser(text, isSticker){
+  if (text===undefined) text = input.value;
   text=(text||"").trim(); if(!text || S.sending) return;
   me(isSticker?STK+text:text); if(!isSticker) input.value="";
 
@@ -343,7 +344,7 @@ function sendSticker(e){ handleUser(e,true); }
 /* ==================== 离线主动消息 ==================== */
 let busyUntil=0;
 function scheduleProactive(){
-  const wait=(22+Math.random()*43)*1000;
+  const wait=(8+Math.random()*17)*1000;
   setTimeout(()=>{
     if (document.visibilityState==="visible" && Date.now()>busyUntil && !typingEl && S.stage==="done"){
       if (Math.random()<0.22) himTyped(STK+pick(STICKERS));
