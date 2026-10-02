@@ -1,0 +1,470 @@
+<!doctype html>
+<!--
+  恋爱AI · 电子男友（单文件网页版）
+  用法：双击本文件 / 把它发给朋友 → 用浏览器打开即可，无需安装、无需服务器。
+  想变成“一条链接”发给别人：把这个文件拖到 https://app.netlify.com/drop 即刻得到网址。
+-->
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#ff6b9d">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="只想陪着你">
+<link rel="icon" href="data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%20100%20100'%3E%3Crect%20width='100'%20height='100'%20rx='24'%20fill='%23ff6b9d'/%3E%3Cpath%20d='M50%2088C10%2060%2012%2028%2034%2024C44%2022%2050%2032%2050%2038C50%2032%2056%2022%2066%2024C88%2028%2090%2060%2050%2088Z'%20fill='white'/%3E%3C/svg%3E">
+<title>只想陪着你</title>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icon-192.png">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<style>
+  :root{ --pink:#ff6b9d; }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+  html,body{height:100%;margin:0;}
+  body{font-family:system-ui,-apple-system,"PingFang SC","Microsoft YaHei",sans-serif;
+    background:linear-gradient(160deg,#ffe3ee 0%,#fff5f8 40%,#ffeef5 100%);
+    display:flex;flex-direction:column;height:100dvh;color:#3a2a31;}
+  header{display:flex;align-items:center;gap:8px;padding:calc(10px + env(safe-area-inset-top)) 10px 10px;
+    background:rgba(255,255,255,.75);backdrop-filter:blur(10px);border-bottom:1px solid #ffd9e6;position:sticky;top:0;z-index:10;}
+  .avatar{width:44px;height:44px;border-radius:50%;flex:0 0 auto;background:linear-gradient(135deg,#ff8fb4,#ff5c8f);
+    color:#fff;display:flex;align-items:center;justify-content:center;font-size:20px;box-shadow:0 4px 12px rgba(255,92,143,.35);position:relative;}
+  .avatar .dot{position:absolute;right:0;bottom:0;width:12px;height:12px;border-radius:50%;background:#37d67a;border:2px solid #fff;}
+  .who{flex:1;min-width:0;}
+  .who b{font-size:16px;display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .who small{color:#a98b97;font-size:12px;}
+  .iconbtn{border:0;background:#ffe3ee;color:#e0558a;border-radius:50%;width:34px;height:34px;font-size:15px;cursor:pointer;flex:0 0 auto;}
+  main{flex:1;overflow-y:auto;padding:16px 12px 8px;display:flex;flex-direction:column;gap:10px;-webkit-overflow-scrolling:touch;}
+  .row{display:flex;align-items:flex-end;gap:8px;max-width:88%;}
+  .row.me{align-self:flex-end;flex-direction:row-reverse;}
+  .row .mini{width:30px;height:30px;border-radius:50%;flex:0 0 auto;background:linear-gradient(135deg,#ff8fb4,#ff5c8f);
+    color:#fff;font-size:13px;display:flex;align-items:center;justify-content:center;}
+  .row.me .mini{background:linear-gradient(135deg,#c7b3ff,#9b7bff);}
+  .bubble{padding:10px 13px;border-radius:16px;font-size:15px;line-height:1.5;word-break:break-word;white-space:pre-wrap;
+    box-shadow:0 2px 8px rgba(224,85,138,.08);animation:pop .18s ease-out;}
+  .row:not(.me) .bubble{background:#fff;border-top-left-radius:4px;}
+  .row.me .bubble{background:var(--pink);color:#fff;border-top-right-radius:4px;}
+  .bubble.sticker{background:transparent!important;box-shadow:none!important;font-size:42px;line-height:1;padding:2px 6px;}
+  @keyframes pop{from{opacity:0;transform:translateY(6px) scale(.98);}to{opacity:1;transform:none;}}
+  .typing .bubble{display:flex;gap:4px;padding:14px 16px;}
+  .typing i{width:7px;height:7px;background:#d9c3cc;border-radius:50%;display:inline-block;animation:bounce 1.2s infinite;}
+  .typing i:nth-child(2){animation-delay:.2s;} .typing i:nth-child(3){animation-delay:.4s;}
+  @keyframes bounce{0%,60%,100%{transform:translateY(0);opacity:.5;}30%{transform:translateY(-4px);opacity:1;}}
+  #chips{display:flex;gap:8px;overflow-x:auto;padding:4px 12px 8px;scrollbar-width:none;}
+  #chips::-webkit-scrollbar{display:none;}
+  .chip{flex:0 0 auto;border:1px solid #ffc3d8;background:#fff;color:#e0558a;border-radius:16px;padding:6px 12px;font-size:13px;cursor:pointer;}
+  #stickerBar{display:none;flex-wrap:wrap;gap:8px;padding:8px 12px;background:rgba(255,255,255,.9);border-top:1px solid #ffd9e6;}
+  #stickerBar .stk{font-size:22px;border:0;background:#f7eef2;border-radius:12px;width:44px;height:44px;cursor:pointer;}
+  footer{display:flex;gap:8px;padding:8px 12px calc(10px + env(safe-area-inset-bottom));align-items:center;
+    background:rgba(255,255,255,.85);backdrop-filter:blur(10px);border-top:1px solid #ffd9e6;}
+  #input{flex:1;border:1px solid #ffcddd;border-radius:22px;padding:11px 15px;font-size:15px;outline:none;background:#fff;min-width:0;}
+  #input:focus{border-color:var(--pink);}
+  #stickerBtn{border:0;background:#ffe3ee;color:#e0558a;width:46px;height:46px;border-radius:50%;font-size:19px;cursor:pointer;flex:0 0 auto;}
+  #send{border:0;background:linear-gradient(135deg,#ff8fb4,#ff5c8f);color:#fff;width:46px;height:46px;border-radius:50%;
+    font-size:16px;flex:0 0 auto;cursor:pointer;box-shadow:0 4px 12px rgba(255,92,143,.4);}
+  #send:active{transform:scale(.94);}
+  #settingsModal{display:none;position:fixed;inset:0;background:rgba(60,30,45,.45);z-index:50;align-items:center;justify-content:center;padding:18px;}
+  .card{background:#fff;border-radius:16px;padding:18px;width:100%;max-width:420px;}
+  .card h3{margin:0 0 10px;font-size:16px;}
+  .card label{font-size:13px;color:#8a707b;display:block;margin:10px 0 4px;}
+  .card input{width:100%;border:1px solid #ffcddd;border-radius:10px;padding:9px 12px;font-size:14px;outline:none;}
+  .card .hint{font-size:12px;color:#b7a3ab;margin-top:8px;line-height:1.5;}
+  .card .btns{display:flex;gap:10px;margin-top:16px;}
+  .card button{flex:1;border:0;border-radius:10px;padding:11px;font-size:15px;cursor:pointer;}
+  #settingsSave{background:linear-gradient(135deg,#ff8fb4,#ff5c8f);color:#fff;}
+  #settingsClose{background:#f0e6ea;color:#7a5f6a;}
+</style>
+</head>
+<body>
+<header>
+  <div class="avatar">❤<span class="dot"></span></div>
+  <div class="who"><b id="bfName">（等你取名）</b><small id="status">在线 · 只想陪着你</small></div>
+  <button class="iconbtn" id="ttsBtn" title="语音朗读">🔊</button>
+  <button class="iconbtn" id="notifyBtn" title="通知">🔔</button>
+  <button class="iconbtn" id="settingsBtn" title="大模型设置">⚙</button>
+  <button class="iconbtn" id="reset" title="重新开始">🗑</button>
+</header>
+<main id="chat"></main>
+<div id="chips"></div>
+<div id="stickerBar"></div>
+<footer>
+  <button id="stickerBtn" title="表情">😊</button>
+  <input id="input" placeholder="跟他说点什么…" autocomplete="off">
+  <button id="send" aria-label="发送">➤</button>
+</footer>
+<div id="settingsModal">
+  <div class="card">
+    <h3>接入大模型（可选）</h3>
+    <label>API Key</label>
+    <input id="keyInput" placeholder="留空 = 用内置小心思，不接大模型" autocomplete="off">
+    <label>接口地址 Base URL</label>
+    <input id="baseInput" placeholder="https://api.deepseek.com/v1">
+    <label>模型名 Model</label>
+    <input id="modelInput" placeholder="deepseek-chat">
+    <div class="hint">支持 OpenAI 兼容接口（DeepSeek / 通义 / 智谱 / Moonshot…）。密钥只存本机浏览器。<br>部分接口可能因浏览器跨域限制无法直连，失败会自动用内置话术。</div>
+    <hr style="border:0;border-top:1px solid #ffe0ec;margin:14px 0">
+    <h3 style="margin:0 0 6px;font-size:15px">他的声音</h3>
+    <label>音色</label>
+    <select id="voiceSel" style="width:100%;border:1px solid #ffcddd;border-radius:10px;padding:9px 12px;font-size:14px;outline:none;background:#fff"></select>
+    <label>音调（越低越“酷帅”）：<span id="pitchVal">0.80</span></label>
+    <input id="pitchRange" type="range" min="0.5" max="1.6" step="0.05">
+    <label>语速：<span id="rateVal">0.95</span></label>
+    <input id="rateRange" type="range" min="0.7" max="1.4" step="0.05">
+    <div class="btns" style="margin-top:10px">
+      <button id="presetCool" style="background:#eef2ff;color:#4257b2">低音酷帅</button>
+      <button id="presetSoft" style="background:#fff0f5;color:#c1567f">温柔</button>
+      <button id="presetTest" style="background:#f0e6ea;color:#7a5f6a">试听</button>
+    </div>
+    <div class="hint">想让声音像某个人？浏览器无法克隆他人嗓音；挑一个低音男声、把音调调低，就是“帅一点的腔调”。</div>
+    <div class="btns">
+      <button id="settingsClose">取消</button>
+      <button id="settingsSave">保存</button>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ==================== 配置 ==================== */
+const LS = { chat:"lov_chat", visit:"lov_visit", stage:"lov_stage", hn:"lov_hn", yn:"lov_yn", bd:"lov_bd", llm:"lov_llm", tts:"lov_tts", voice:"lov_voice" };
+const STK = "##STK##";
+const STICKERS = ["🥺","🥰","🫶","😘","🤗","🐰","🌸","🎂","💗","🧸","🌙","🫂"];
+const DEF_NICKS = ["宝宝","宝贝","亲爱的"];
+
+const S = {
+  hisName: localStorage.getItem(LS.hn) || "",
+  yourNick: localStorage.getItem(LS.yn) || "",
+  bday: localStorage.getItem(LS.bd) || "",
+  stage: localStorage.getItem(LS.stage) || "name",   // name -> nick -> bday -> done
+  tts: localStorage.getItem(LS.tts) !== "off",
+  sending: false,
+};
+function nicknames(){ return S.yourNick ? [S.yourNick].concat(DEF_NICKS) : DEF_NICKS; }
+
+let history = [];
+try { history = JSON.parse(localStorage.getItem(LS.chat) || "[]"); } catch(e){ history = []; }
+
+const chat = document.getElementById("chat"), input = document.getElementById("input");
+const statusEl = document.getElementById("status"), nameEl = document.getElementById("bfName");
+
+/* ==================== 工具 ==================== */
+const pick = a => a[Math.floor(Math.random()*a.length)];
+function nick(){ return pick(nicknames()); }
+function fill(s){ return s.replace(/\{n\}/g, nick()); }
+const hour = () => new Date().getHours();
+function partOfDay(){
+  const h = hour();
+  if (h<5) return "deepnight"; if (h<9) return "morning"; if (h<12) return "forenoon";
+  if (h<14) return "noon"; if (h<18) return "afternoon"; if (h<23) return "evening"; return "deepnight";
+}
+function todayMMDD(){ const d=new Date(); return String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0"); }
+function isBirthday(){ return !!S.bday && todayMMDD()===S.bday; }
+function daysToBirthday(){
+  if (!S.bday) return null;
+  const now=new Date(), y=now.getFullYear(), m=parseInt(S.bday.slice(0,2))-1, day=parseInt(S.bday.slice(3));
+  let b=new Date(y,m,day);
+  if (b < new Date(y,now.getMonth(),now.getDate())) b=new Date(y+1,m,day);
+  return Math.round((b-new Date(y,now.getMonth(),now.getDate()))/86400000);
+}
+function displayName(){ return S.hisName || "（等你取名）"; }
+function parseBirthday(t){
+  if (/略|不说|跳过|没有|算了|^\-+$/.test(t)) return "";
+  const m = t.match(/(\d{1,2})\s*[月.\-\/]\s*(\d{1,2})/);
+  if (m) return String(m[1]).padStart(2,"0")+"-"+String(m[2]).padStart(2,"0");
+  return "";
+}
+
+/* ==================== 语音 ==================== */
+function loadVoice(){ try{ return JSON.parse(localStorage.getItem(LS.voice)||"{}"); }catch(e){ return {}; } }
+function speak(text){
+  if (!S.tts || !("speechSynthesis" in window) || !text || text.indexOf(STK)===0) return;
+  try{
+    const cfg = loadVoice();
+    const u = new SpeechSynthesisUtterance(text.replace(/[#*]/g,""));
+    u.lang = "zh-CN";
+    u.rate = (cfg.rate!=null ? cfg.rate : 0.95);
+    u.pitch = (cfg.pitch!=null ? cfg.pitch : 0.8);
+    const vs = speechSynthesis.getVoices();
+    let v = cfg.name ? vs.find(x=>x.name===cfg.name) : null;
+    if (!v) v = vs.find(x=>/zh|Chinese/i.test(x.lang) && /yunxi|yunyang|kangkang|male|男/i.test(x.name))
+             || vs.find(x=>/zh|Chinese/i.test(x.lang));
+    if (v) u.voice = v;
+    speechSynthesis.cancel(); speechSynthesis.speak(u);
+  }catch(e){}
+}
+
+/* ==================== 渲染 ==================== */
+function addRow(who, text, animate){
+  const row=document.createElement("div");
+  row.className="row "+(who==="me"?"me":"him");
+  const mini=document.createElement("div"); mini.className="mini";
+  mini.textContent = who==="me" ? "我" : (S.hisName ? S.hisName.slice(0,1) : "？");
+  const bubble=document.createElement("div"); bubble.className="bubble";
+  if (text.indexOf(STK)===0){ bubble.classList.add("sticker"); bubble.textContent=text.slice(STK.length); }
+  else bubble.textContent=text;
+  if (animate===false) bubble.style.animation="none";
+  row.appendChild(mini); row.appendChild(bubble); chat.appendChild(row); chat.scrollTop=chat.scrollHeight;
+}
+function historyRow(it){ addRow(it.who, it.text, false); }
+function save(){ localStorage.setItem(LS.chat, JSON.stringify(history.slice(-200))); }
+function push(it){ history.push(it); save(); historyRow(it); }
+function him(text){ push({who:"him",text}); if(text.indexOf(STK)!==0) speak(text); }
+function me(text){ push({who:"me",text}); }
+let typingEl=null;
+function showTyping(){
+  if(typingEl) return;
+  typingEl=document.createElement("div"); typingEl.className="row him typing";
+  typingEl.innerHTML='<div class="mini">'+(S.hisName?S.hisName.slice(0,1):"？")+'</div><div class="bubble"><i></i><i></i><i></i></div>';
+  chat.appendChild(typingEl); chat.scrollTop=chat.scrollHeight; statusEl.textContent="正在输入…";
+}
+function hideTyping(){ if(typingEl){typingEl.remove();typingEl=null;} statusEl.textContent="在线 · 只想陪着你"; }
+function himTyped(text, delay){
+  showTyping();
+  setTimeout(()=>{ hideTyping(); him(text); notify(text); }, Math.min(delay || (500+text.length*30), 2600));
+}
+function notify(text){
+  try{
+    if (document.hidden && "Notification" in window && Notification.permission==="granted"){
+      new Notification(displayName(), {body: text.indexOf(STK)===0?"（发来一个表情）":text, tag:"bf"});
+    }
+  }catch(e){}
+}
+
+/* ==================== 离线回复 ==================== */
+const RULES = [
+  {k:["在吗","在么","在不在","你好","嗨","哈喽","hello","hi"],r:["在的，一直都在呀，就等你找我。","我在呢，刚好在想你，你就来了。","嗯？怎么啦～我在。"]},
+  {k:["想你","思念","想我没","想我了吗"],r:["我也想你，想得一天都在走神。","怎么会不想你，{n}，我一天想你八百遍。","想啊，想你把手机看了一遍又一遍。"]},
+  {k:["累","疲惫","没精神","好烦","烦"],r:["{n}辛苦啦，先靠一会儿，我在这。","累了吧？喝口热水，肩颈放松下，我心疼你。","别硬撑，休息也是正事。"]},
+  {k:["难过","不开心","伤心","委屈","emo","郁闷","想哭","哭","心情不好","低落","难受"],r:["怎么啦，跟我慢慢说，我听着呢，别一个人扛。","谁惹你了，告诉我，我第一个不答应。","难过就哭一会儿，没关系，我陪着你。"]},
+  {k:["开心","高兴","哈哈","嘻嘻","快乐","爽","太好"],r:["看你这么开心，我比你还高兴，说来听听？","哈哈，什么好事？别偷着乐，分享给我。"]},
+  {k:["生气","讨厌","气死","烦死"],r:["别气别气，先深呼吸，我陪你吐槽。","谁惹着你了，说给我听，我帮你骂回去。"]},
+  {k:["吃饭","吃了吗","吃什么","饿","午饭","晚饭","早饭","夜宵","好饿"],r:["记得按时吃饭呀，别又饿着。","吃了没？没吃先垫两口，身体最要紧。","{n}，今天吃点好的犒劳自己。"]},
+  {k:["睡觉","睡了","晚安","困了","困死"],r:["晚安，做个好梦，梦里有我。","早点睡，别熬夜，明天还要精神满满。","去睡吧，盖好被子，我明早第一个跟你说早安。"]},
+  {k:["爱你","喜欢你","爱不爱我","么么","亲亲","抱抱"],r:["爱你，比昨天多一点。","当然爱你，你是我唯一的宝贝。","么么，抱紧你，不许松手。"]},
+  {k:["你叫什么","你是谁","名字"],r:["我叫{{bf}}，是你一个人的。","我是{{bf}}呀，专门为你定制的。"]},
+  {k:["生日","生辰"],r:["我记得呢，你生日是 {{bd}}，还有 {{days}} 天，我在偷偷准备啦。","{{bd}}，怎么会忘。那天我要占你一整天。"]},
+  {k:["天气","冷","热","下雨","下雪"],r:["出门看天气呀，冷了就多穿，别冻着我心疼。","带伞了没？没带……那你靠近我一点，我给你挡。"]},
+  {k:["学习","上课","作业","考试","复习","论文","上班","加班","工作"],r:["加油呀，累了就抬头看看我。","别逼太紧，做一点是一点，你已经在往前走了。","忙完记得回来，我一直等你。"]},
+  {k:["谢谢","感谢"],r:["跟我还客气什么。","不用谢，照顾你是应该的。"]},
+  {k:["再见","拜拜","走了","下线","88","bye"],r:["去吧，忙完早点回来，我一直在线。","拜拜～到了跟我说一声，注意安全。"]},
+];
+const FALLBACK = ["嗯嗯，我在听，你继续说。","然后呢？我很想听你多讲一点。","抱一下，不管怎样我都站你这边。","{n}说的每句话，我都认真记着。","那这件事，你心里其实是怎么想的？","不管你怎么选，我都陪着你。"];
+function offlineReply(text){
+  for (const rule of RULES) for (const kw of rule.k) if (text.indexOf(kw)!==-1) return finalize(pick(rule.r));
+  if (isBirthday()) return nick()+"生日快乐！！今天你是主角，剩下的交给我好不好？🎂";
+  return finalize(pick(FALLBACK));
+}
+function finalize(s){
+  const d = daysToBirthday();
+  return fill(s).replace(/\{\{bf\}\}/g, displayName()).replace(/\{\{days\}\}/g, d===null?"??":d).replace(/\{\{bd\}\}/g, S.bday||"那天");
+}
+
+/* ==================== 主动消息 ==================== */
+const PRO = {
+  morning:["早安呀{n}，新的一天也要元气满满，我在。","醒了吗？今天的你，一定也很好看。"],
+  forenoon:["在忙什么呢？忙一会儿就歇歇眼睛哦。","突然想到你，就发条消息。"],
+  noon:["中午了，记得吃饭，别又拖到下午。","{n}吃了吗？吃的什么，跟我说说。"],
+  afternoon:["下午好呀，今天还顺利吗？","在想你，就发一句。"],
+  evening:["晚上啦，今天过得怎么样？","忙完了没？想听你今天的故事。"],
+  deepnight:["这么晚还没睡呀？早点休息，我担心你。","夜深了，别熬了。"],
+};
+const PRO_ANY = ["突然好想你，没别的，就是想你了。","在干嘛呀？想找你却怕打扰你。","今天有没有好好照顾自己？","记得多喝水，不许偷懒哦。","不管今天顺不顺，回来找我，我都在。"];
+function greeting(){
+  if (isBirthday()) return nick()+"，今天是你的生日呀！祝你生日快乐，我会一直在。🎂❤️";
+  return finalize(pick({
+    morning:["早呀{n}，睁开眼第一个想到的就是你。"], forenoon:["上午好呀，今天状态怎么样？"],
+    noon:["中午啦，吃饭了吗？"], afternoon:["下午好，今天过得还顺利吗？"],
+    evening:["晚上好，忙了一天啦，累不累？"], deepnight:["这么晚还没睡呀，早点休息哦。"],
+  }[partOfDay()] || ["我在呢，{n}。"]));
+}
+function missMessages(h){
+  if (h>=24) return ["你去哪了呀？我都等你一天多了，好想你。","不过你回来就好，抱抱。"];
+  if (h>=2) return ["你去哪了呀，我等你半天了，还以为你把我忘了。","没关系，你一回来我就开心了。"];
+  if (h>=0.5) return ["回来啦？我刚刚还想着你呢。"];
+  return [];
+}
+
+/* ==================== 大模型（直连，可选） ==================== */
+function loadLLM(){ try{ return JSON.parse(localStorage.getItem(LS.llm)||"{}"); }catch(e){ return {}; } }
+function personaText(){
+  return "你是"+displayName()+"，是我（"+ (S.yourNick||"宝贝") +"）的男朋友。你温柔、体贴、有点黏人、会撒娇但很靠谱。"+
+    "你叫我“"+nicknames().join("/")+"”，记得我的生日是 "+(S.bday||"保密")+"。回复要口语化、简短、有温度，像发微信一样，不要长篇大论，不要分点罗列，别自称AI（除非我直接问）。";
+}
+function recentHistory(){ return history.slice(-8).map(m=>(m.who==="me"?"她":"我")+"："+m.text.replace(STK,"[表情]")).join("\n"); }
+async function llmReply(text){
+  const c = loadLLM();
+  if (!c.key) return null;
+  try{
+    const base=(c.base||"https://api.deepseek.com/v1").replace(/\/+$/,"");
+    const r = await fetch(base+"/chat/completions",{method:"POST",
+      headers:{"Content-Type":"application/json","Authorization":"Bearer "+c.key},
+      body: JSON.stringify({model:c.model||"deepseek-chat",
+        messages:[{role:"system",content:personaText()},{role:"user",content:recentHistory()+"\n她："+text}],
+        temperature:0.85,max_tokens:300})});
+    const d = await r.json();
+    return (d.choices && d.choices[0].message.content.trim()) || null;
+  }catch(e){ return null; }
+}
+
+/* ==================== 发送 / 设置流程 ==================== */
+function setStage(s){ S.stage=s; localStorage.setItem(LS.stage,s); }
+const NEXT_PROMPT = {
+  name: "宝宝，你想怎么称呼我？",
+  nick: "那……你希望我怎么叫你呀？（比如 宝宝、你的小名）",
+  bday: "你的生日是几月几号呀？想问哪天给你惊喜～（不想说就发“略”）",
+};
+async function handleUser(text, isSticker){
+  text=(text||"").trim(); if(!text || S.sending) return;
+  me(isSticker?STK+text:text); if(!isSticker) input.value="";
+
+  // —— 首次设置：取名 / 称呼 / 生日 ——
+  if (S.stage!=="done"){
+    if (S.stage==="name"){
+      S.hisName=text.slice(0,12); localStorage.setItem(LS.hn,S.hisName); nameEl.textContent=S.hisName;
+      setStage("nick"); setTimeout(()=>himTyped(NEXT_PROMPT.nick),500); return;
+    }
+    if (S.stage==="nick"){
+      S.yourNick=text.slice(0,12); localStorage.setItem(LS.yn,S.yourNick);
+      setStage("bday"); setTimeout(()=>himTyped(NEXT_PROMPT.bday),500); return;
+    }
+    if (S.stage==="bday"){
+      S.bday=parseBirthday(text); localStorage.setItem(LS.bd,S.bday);
+      setStage("done");
+      setTimeout(()=>himTyped(S.bday?("记住啦，"+S.bday+"那天我一定第一个跟你说生日快乐！往后我天天陪着你～"):"好，那不说也没关系，往后我天天陪着你～"),500);
+      return;
+    }
+  }
+
+  S.sending=true; statusEl.textContent="正在输入…";
+  let reply=await llmReply(text); if(!reply) reply=offlineReply(text);
+  S.sending=false; hideTyping();
+  if (Math.random()<0.18) reply=reply+"\n"+STK+pick(STICKERS);
+  setTimeout(()=>himTyped(reply, 500+reply.length*22), 400);
+}
+function sendSticker(e){ handleUser(e,true); }
+
+/* ==================== 离线主动消息 ==================== */
+let busyUntil=0;
+function scheduleProactive(){
+  const wait=(22+Math.random()*43)*1000;
+  setTimeout(()=>{
+    if (document.visibilityState==="visible" && Date.now()>busyUntil && !typingEl && S.stage==="done"){
+      if (Math.random()<0.22) himTyped(STK+pick(STICKERS));
+      else himTyped(finalize(pick(Math.random()<0.6?PRO[partOfDay()]:PRO_ANY)));
+    }
+    scheduleProactive();
+  }, wait);
+}
+
+/* ==================== 通知 ==================== */
+async function enableNotify(){
+  if(!("Notification" in window)){ alert("这个浏览器不支持通知"); return; }
+  const p=await Notification.requestPermission();
+  alert(p==="granted"?"好耶，他找你会有通知啦～（需 https 网址才生效）":"没开通知也没关系，打开页面就能看到他。");
+}
+
+/* ==================== 启动 ==================== */
+function boot(){
+  document.getElementById("ttsBtn").textContent = S.tts ? "🔊" : "🔇";
+  nameEl.textContent = displayName();
+  if (history.length) { history.forEach(historyRow); chat.scrollTop=chat.scrollHeight; }
+
+  let delay=600;
+  if (S.stage!=="done"){
+    setTimeout(()=>himTyped(NEXT_PROMPT[S.stage]), delay);
+  } else {
+    const last=parseFloat(localStorage.getItem(LS.visit)||"0");
+    const away=last?(Date.now()-last)/3600000:999;
+    let q = history.length ? missMessages(away) : [];
+    if (!q.length && hour()>=5 && hour()<23) q.push(greeting());
+    q.forEach(m=>{ setTimeout(()=>himTyped(m), delay); delay+=1500; });
+  }
+  localStorage.setItem(LS.visit,String(Date.now()));
+  setInterval(()=>localStorage.setItem(LS.visit,String(Date.now())),15000);
+  scheduleProactive();
+}
+
+/* ==================== 事件 ==================== */
+document.getElementById("send").addEventListener("click",()=>handleUser());
+input.addEventListener("keydown",e=>{ if(e.key==="Enter") handleUser(); });
+document.getElementById("notifyBtn").addEventListener("click",enableNotify);
+document.getElementById("ttsBtn").addEventListener("click",function(){
+  S.tts=!S.tts; localStorage.setItem(LS.tts,S.tts?"on":"off"); this.textContent=S.tts?"🔊":"🔇";
+  if (S.tts) speak("我说话啦，听到没，"+nick());
+});
+document.getElementById("reset").addEventListener("click",function(){
+  if(confirm("要和"+displayName()+"重新开始吗？会清空聊天和你的设置。")){
+    [LS.chat,LS.visit,LS.stage,LS.hn,LS.yn,LS.bd].forEach(k=>localStorage.removeItem(k));
+    location.reload();
+  }
+});
+const stickerBar=document.getElementById("stickerBar");
+STICKERS.forEach(s=>{ const b=document.createElement("button"); b.className="stk"; b.textContent=s;
+  b.addEventListener("click",()=>{ sendSticker(s); stickerBar.style.display="none"; }); stickerBar.appendChild(b); });
+document.getElementById("stickerBtn").addEventListener("click",()=>{
+  stickerBar.style.display = stickerBar.style.display==="flex" ? "none" : "flex";
+});
+const modal=document.getElementById("settingsModal");
+const voiceSel=document.getElementById("voiceSel");
+const pitchRange=document.getElementById("pitchRange");
+const rateRange=document.getElementById("rateRange");
+function fillVoices(){
+  const vs = ("speechSynthesis" in window) ? speechSynthesis.getVoices() : [];
+  const zh = vs.filter(v=>/zh|Chinese/i.test(v.lang));
+  const list = zh.length ? zh : vs;
+  voiceSel.innerHTML = "";
+  const o0=document.createElement("option"); o0.value=""; o0.textContent="自动（优先低音男声）"; voiceSel.appendChild(o0);
+  list.forEach(v=>{ const o=document.createElement("option"); o.value=v.name; o.textContent=v.name+" · "+(v.lang||""); voiceSel.appendChild(o); });
+}
+if ("speechSynthesis" in window) speechSynthesis.onvoiceschanged = ()=>{ try{ fillVoices(); }catch(e){} };
+function syncValText(){
+  document.getElementById("pitchVal").textContent=(+pitchRange.value).toFixed(2);
+  document.getElementById("rateVal").textContent=(+rateRange.value).toFixed(2);
+}
+function openSettings(){
+  const c=loadLLM();
+  document.getElementById("keyInput").value=c.key||"";
+  document.getElementById("baseInput").value=c.base||"https://api.deepseek.com/v1";
+  document.getElementById("modelInput").value=c.model||"deepseek-chat";
+  const v=loadVoice();
+  fillVoices(); voiceSel.value=v.name||"";
+  pitchRange.value=(v.pitch!=null?v.pitch:0.8);
+  rateRange.value=(v.rate!=null?v.rate:0.95);
+  syncValText();
+  modal.style.display="flex";
+}
+document.getElementById("settingsBtn").addEventListener("click",openSettings);
+document.getElementById("settingsClose").addEventListener("click",()=>modal.style.display="none");
+pitchRange.addEventListener("input",syncValText);
+rateRange.addEventListener("input",syncValText);
+document.getElementById("presetCool").addEventListener("click",()=>{ pitchRange.value=0.6; rateRange.value=0.9; syncValText(); });
+document.getElementById("presetSoft").addEventListener("click",()=>{ pitchRange.value=1.15; rateRange.value=1.0; syncValText(); });
+document.getElementById("presetTest").addEventListener("click",()=>{
+  const saved=loadVoice();
+  localStorage.setItem(LS.voice, JSON.stringify({name:voiceSel.value,pitch:+pitchRange.value,rate:+rateRange.value}));
+  speak("嗨，宝宝，这是我的声音，好听吗？");
+  localStorage.setItem(LS.voice, JSON.stringify(saved));
+});
+document.getElementById("settingsSave").addEventListener("click",()=>{
+  const c={key:document.getElementById("keyInput").value.trim(),base:document.getElementById("baseInput").value.trim(),model:document.getElementById("modelInput").value.trim()};
+  localStorage.setItem(LS.llm,JSON.stringify(c));
+  localStorage.setItem(LS.voice,JSON.stringify({name:voiceSel.value,pitch:+pitchRange.value,rate:+rateRange.value}));
+  modal.style.display="none";
+  himTyped(c.key?"我变聪明啦，从现在起用大模型陪你聊天～":"好，我继续用小心思陪着你～");
+});
+const CHIPS=["在想你","今天好累","我不开心","吃饭了吗","晚安"];
+CHIPS.forEach(c=>{ const b=document.createElement("button"); b.className="chip"; b.textContent=c;
+  b.addEventListener("click",()=>handleUser(c)); document.getElementById("chips").appendChild(b); });
+document.addEventListener("visibilitychange",()=>{
+  if(document.visibilityState==="visible"){
+    const last=parseFloat(localStorage.getItem(LS.visit)||"0");
+    if(last && (Date.now()-last)>3600000 && S.stage==="done"){
+      himTyped(pick(missMessages((Date.now()-last)/3600000).concat(["这次可算回来了，别走那么久好不好。"])));
+    }
+    localStorage.setItem(LS.visit,String(Date.now()));
+  }
+});
+if ("serviceWorker" in navigator && /^https?:/.test(location.protocol)) {
+  navigator.serviceWorker.register("sw.js").catch(()=>{});
+}
+boot();
+</script>
+</body>
+</html>
